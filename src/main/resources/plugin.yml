@@ -1,0 +1,4 @@
+name: SimpleDiamondEconomy
+version: '1.0'
+main: me.elaineqheart.simpleDiamondEconomy.SimpleDiamondEconomy
+api-version: '1.21'
