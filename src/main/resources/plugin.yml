@@ -3,3 +3,12 @@ version: '1.0'
 main: me.elaineqheart.simpleDiamondEconomy.SimpleDiamondEconomy
 api-version: '1.21'
 depend: [ Vault ]
+commands:
+  diamonds:
+    description: command for SimpleDiamondEconomy
+    usage: /<command> <withdraw|deposit>
+    permission: simplediamondeconomy.use
+permissions:
+  simplediamondeconomy.use:
+    description: allows to use /diamonds
+    default: true

@@ -2,37 +2,61 @@ package me.elaineqheart.simpleDiamondEconomy.commands;
 
 
 import me.elaineqheart.simpleDiamondEconomy.GUI.DepositGUI;
-import me.elaineqheart.simpleDiamondEconomy.data.Messages;
+import me.elaineqheart.simpleDiamondEconomy.data.SettingManager;
 import org.bukkit.Material;
-import studio.mevera.imperat.BukkitSource;
-import studio.mevera.imperat.annotations.*;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-@Command("diamonds")
-public final class DiamondCommand {
+import java.util.ArrayList;
+import java.util.List;
 
-    @Usage
-    public void defaultUsage(BukkitSource source) {
-        source.reply(Messages.getFormatted("chat.no-args"));
-    }
+public final class DiamondCommand implements CommandExecutor, TabCompleter {
 
-    @SubCommand("withdraw")
-    public static class withdrawSubCommand {
-        @Usage
-        public void defaultUsage(BukkitSource source) {
-            DepositGUI.open(source.asPlayer(), true, null);
+    @Override
+    public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
+
+        if(commandSender instanceof Player p) {
+            if(strings.length == 0) return false;
+
+            if(strings[0].equals("deposit")) {
+                DepositGUI.open(p, false, null);
+                return true;
+            }
+
+            if(strings[0].equals("withdraw")) {
+                if(strings.length == 1) {
+                    DepositGUI.open(p, true, null);
+                } else if(strings.length == 2) {
+                    Material mat = Material.matchMaterial(strings[1]);
+                    if(mat == null) return true;
+                    DepositGUI.open(p, true, mat);
+                }
+                return true;
+            }
         }
 
-        @Usage
-        public void specifiedItem(
-                BukkitSource source,
-                @Named("item") @SuggestionProvider("materials") String item
-        ) {
-            DepositGUI.open(source.asPlayer(), true, Material.matchMaterial(item));
-        }
+        return true;
     }
 
-    @SubCommand("deposit")
-    public void deposit(BukkitSource source) {
-        DepositGUI.open(source.asPlayer(),false, null);
+    @Override
+    public List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
+        List<String> params = new ArrayList<>();
+        List<String> assetParams = new ArrayList<>();
+        if(strings.length == 1) {
+            assetParams = List.of("deposit", "withdraw");
+        } else if(strings.length == 2 && strings[0].equals("withdraw")) {
+            assetParams = SettingManager.itemNames;
+        }
+        for (String p : assetParams) {
+            if (p.indexOf(strings[strings.length-1]) == 0){
+                params.add(p);
+            }
+        }
+        return params;
     }
 }
