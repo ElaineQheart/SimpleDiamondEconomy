@@ -25,10 +25,11 @@
 # &n new line
 
 chat:
-  no-args: "Usage: /diamonds <withdraw|deposit>"
   deposit-success: "[§6DiamondEconomy§f] §eDeposited: §f%amount%"
 
 side-bar:
+  title: "§eEconomy"
+  text: "» Purse: §6%balance%"
 
 gui:
   title: "Diamond Deposit"

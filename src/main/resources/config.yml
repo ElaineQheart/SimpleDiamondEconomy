@@ -1,5 +1,5 @@
 sidebar-enabled: true
-currency: " coins"
+sidebar-update-ticks: 10 # in ticks
 items:
   diamond: 100
   diamond_block: 900

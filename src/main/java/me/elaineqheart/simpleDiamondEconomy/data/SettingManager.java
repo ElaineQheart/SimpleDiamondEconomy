@@ -5,17 +5,15 @@ import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class SettingManager {
 
     public static boolean sidebarEnabled;
-    public static String currency;
-    public static Map<Material, Double> itemMaterials;
+    public static Map<Material, Double> itemMaterials = new HashMap<>();
     public static List<String> itemNames;
+    public static int sidebarUpdateInterval;
+    public static List<Map.Entry<Material, Double>> sortedEntries;
 
     static {
         loadData();
@@ -24,14 +22,13 @@ public class SettingManager {
     public static void loadData() {
         FileConfiguration c = SimpleDiamondEconomy.getInstance().getConfig();
         sidebarEnabled = c.getBoolean("sidebar-enabled", true);
-        currency = c.getString("currency", " coins");
+        sidebarUpdateInterval = c.getInt("sidebar-update-ticks", 10);
 
         ConfigurationSection itemConf = c.getConfigurationSection("items");
         if(itemConf == null) return;
 
         Set<String> itemKeys = itemConf.getKeys(false);
         itemNames = itemKeys.stream().toList();
-        Map<Material, Double> tempMap = new HashMap<>();
         for(String key : itemKeys) {
             Material mat = Material.matchMaterial(key);
             if(mat == null) {
@@ -39,9 +36,14 @@ public class SettingManager {
                 continue;
             }
             double value = itemConf.getDouble(key, 0);
-            tempMap.put(mat, value);
+            itemMaterials.put(mat, value);
         }
-        itemMaterials = tempMap;
+
+        sortedEntries = SettingManager.itemMaterials.entrySet()
+                .stream()
+                .sorted(Map.Entry.comparingByValue())
+                .toList()
+                .reversed();
     }
 
 }

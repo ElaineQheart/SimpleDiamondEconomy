@@ -2,6 +2,7 @@ package me.elaineqheart.simpleDiamondEconomy.commands;
 
 
 import me.elaineqheart.simpleDiamondEconomy.GUI.DepositGUI;
+import me.elaineqheart.simpleDiamondEconomy.GUI.Sidebar;
 import me.elaineqheart.simpleDiamondEconomy.data.SettingManager;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -10,7 +11,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,21 +23,28 @@ public final class DiamondCommand implements CommandExecutor, TabCompleter {
         if(commandSender instanceof Player p) {
             if(strings.length == 0) return false;
 
-            if(strings[0].equals("deposit")) {
-                DepositGUI.open(p, false, null);
-                return true;
+            switch (strings[0]) {
+                case "deposit" -> {
+                    DepositGUI.open(p, false, null);
+                    return true;
+                }
+                case "withdraw" -> {
+                    if (strings.length == 1) {
+                        DepositGUI.open(p, true, null);
+                    } else if (strings.length == 2) {
+                        Material mat = Material.matchMaterial(strings[1]);
+                        if (mat == null) return true;
+                        DepositGUI.open(p, true, mat);
+                    }
+                    return true;
+                }
+                case "toggleSidebar" -> {
+                    if(!SettingManager.sidebarEnabled) return true;
+                    Sidebar.changedSidebarState(p);
+                    return true;
+                }
             }
 
-            if(strings[0].equals("withdraw")) {
-                if(strings.length == 1) {
-                    DepositGUI.open(p, true, null);
-                } else if(strings.length == 2) {
-                    Material mat = Material.matchMaterial(strings[1]);
-                    if(mat == null) return true;
-                    DepositGUI.open(p, true, mat);
-                }
-                return true;
-            }
         }
 
         return true;
@@ -49,6 +56,7 @@ public final class DiamondCommand implements CommandExecutor, TabCompleter {
         List<String> assetParams = new ArrayList<>();
         if(strings.length == 1) {
             assetParams = List.of("deposit", "withdraw");
+            if(SettingManager.sidebarEnabled) assetParams = List.of("deposit", "withdraw", "toggleSidebar");
         } else if(strings.length == 2 && strings[0].equals("withdraw")) {
             assetParams = SettingManager.itemNames;
         }

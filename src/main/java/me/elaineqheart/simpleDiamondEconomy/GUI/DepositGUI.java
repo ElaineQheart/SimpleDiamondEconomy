@@ -12,7 +12,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -22,7 +21,13 @@ public class DepositGUI {
     private static final Map<Inventory, Boolean> withdrawModes = new HashMap<>();
 
     public static void open(Player p, boolean withdraw, Material material) {
-        Inventory inv = Bukkit.createInventory(null, 9, Messages.getFormatted("gui.title"));
+        Inventory inv;
+        if(VaultHook.getEconomy().getBalance(p) / SettingManager.sortedEntries.getFirst().getValue() > 64 * 9) {
+            inv = Bukkit.createInventory(null, 27, Messages.getFormatted("gui.title"));
+        } else {
+            inv = Bukkit.createInventory(null, 9, Messages.getFormatted("gui.title"));
+        }
+
         inventories.put(inv, p.getUniqueId());
         withdrawModes.put(inv, withdraw);
         p.openInventory(inv);
@@ -31,28 +36,22 @@ public class DepositGUI {
 
         if(material != null) {
             if(!SettingManager.itemMaterials.containsKey(material)) return;
-            double value = SettingManager.itemMaterials.get(material);
-            double balance = VaultHook.getEconomy().getBalance(p);
-            int amount = (int) Math.floor(balance / value);
-            int rest = fillInventory(inv, material, amount);
-            VaultHook.getEconomy().withdrawPlayer(p, value * (amount-rest));
+            decorate(inv, p, material);
             return;
         }
 
-        List<Map.Entry<Material, Double>> sortedEntries = SettingManager.itemMaterials.entrySet()
-                .stream()
-                .sorted(Map.Entry.comparingByValue())
-                .toList()
-                .reversed();
-        for(Map.Entry<Material, Double> entry : sortedEntries) {
-            Material mat = entry.getKey();
-            double value = entry.getValue();
-            double balance = VaultHook.getEconomy().getBalance(p);
-            int amount = (int) Math.floor(balance / value);
-            int rest = fillInventory(inv, mat, amount);
-            VaultHook.getEconomy().withdrawPlayer(p, value * (amount-rest));
+        for(Map.Entry<Material, Double> entry : SettingManager.sortedEntries) {
+            decorate(inv, p, entry.getKey());
         }
 
+    }
+
+    private static void decorate(Inventory inv, Player p, Material mat) {
+        double balance = VaultHook.getEconomy().getBalance(p);
+        double value = SettingManager.itemMaterials.get(mat);
+        int amount = (int) Math.floor(balance / value);
+        int rest = fillInventory(inv, mat, amount);
+        VaultHook.getEconomy().withdrawPlayer(p, value * (amount-rest));
     }
 
     public static void onClose(Player p) {
@@ -61,8 +60,6 @@ public class DepositGUI {
             inventories.remove(inv);
             boolean withdraw = withdrawModes.getOrDefault(inv, false);
             withdrawModes.remove(inv);
-            p.playSound(p, Sound.BLOCK_SHULKER_BOX_CLOSE, 0.5f, 1.0f);
-            if(!withdraw) p.playSound(p, Sound.BLOCK_NOTE_BLOCK_PLING, 0.5f, 1.8f);
 
             double total = 0;
             for (int i = 0; i < inv.getSize(); i++) {
@@ -76,7 +73,12 @@ public class DepositGUI {
                 total += value * item.getAmount();
             }
             VaultHook.getEconomy().depositPlayer(p, total);
-            if(!withdraw) p.sendMessage(Messages.getFormatted("chat.deposit-success", "%amount%", StringUtils.formatNumber(total)));
+
+            p.playSound(p, Sound.BLOCK_SHULKER_BOX_CLOSE, 0.5f, 1.0f);
+            if(!withdraw && total > 0) {
+                p.sendMessage(Messages.getFormatted("chat.deposit-success", "%amount%", StringUtils.formatNumber(total)));
+                p.playSound(p, Sound.BLOCK_NOTE_BLOCK_PLING, 0.5f, 1.8f);
+            }
         }
     }
 

@@ -2,11 +2,13 @@ name: SimpleDiamondEconomy
 version: '1.0'
 main: me.elaineqheart.simpleDiamondEconomy.SimpleDiamondEconomy
 api-version: '1.21'
-depend: [ Vault ]
+depend:
+  - Vault
+  - packetevents
 commands:
   diamonds:
     description: command for SimpleDiamondEconomy
-    usage: /<command> <withdraw|deposit>
+    usage: /<command> <withdraw | deposit>
     permission: simplediamondeconomy.use
 permissions:
   simplediamondeconomy.use:
