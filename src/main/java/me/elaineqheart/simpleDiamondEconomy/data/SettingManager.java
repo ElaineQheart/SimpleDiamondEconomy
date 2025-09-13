@@ -4,9 +4,9 @@ import me.elaineqheart.simpleDiamondEconomy.SimpleDiamondEconomy;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -14,7 +14,8 @@ public class SettingManager {
 
     public static boolean sidebarEnabled;
     public static String currency;
-    public static Map<ItemStack, Double> items;
+    public static Map<Material, Double> itemMaterials;
+    public static List<String> itemNames;
 
     static {
         loadData();
@@ -27,20 +28,20 @@ public class SettingManager {
 
         ConfigurationSection itemConf = c.getConfigurationSection("items");
         if(itemConf == null) return;
+
         Set<String> itemKeys = itemConf.getKeys(false);
-        Map<ItemStack, Double> tempMap = new HashMap<>();
+        itemNames = itemKeys.stream().toList();
+        Map<Material, Double> tempMap = new HashMap<>();
         for(String key : itemKeys) {
             Material mat = Material.matchMaterial(key);
             if(mat == null) {
                 SimpleDiamondEconomy.getInstance().getLogger().warning("Invalid material in config: " + key);
                 continue;
             }
-            ItemStack item = new ItemStack(mat, 1);
             double value = itemConf.getDouble(key, 0);
-            tempMap.put(item, value);
+            tempMap.put(mat, value);
         }
-        items = tempMap;
-        System.out.println(items);
+        itemMaterials = tempMap;
     }
 
 }
